@@ -1,5 +1,8 @@
 package com.sksamuel.avro4s
 
+import scala.util.Try
+
+
 case class Anno(className: String, args: Map[String,String])
 
 class AnnotationExtractors(annos: Seq[Any]) {
@@ -21,6 +24,8 @@ class AnnotationExtractors(annos: Seq[Any]) {
   def fixed: Option[Int] = findFirst[AvroFixable].map(_.size)
   def name: Option[String] = findFirst[AvroNameable].map(_.name).filterNot(_.trim.isEmpty)
   def sortPriority: Option[Float] = findFirst[AvroSortPriority].map(_.priority)
+
+  def enumDefault: Option[Any] = findFirst[AvroEnumDefault].map(_.default)
 
   def props: Map[String, String] = findAll[AvroProperty].map { prop =>
     prop.key -> prop.value

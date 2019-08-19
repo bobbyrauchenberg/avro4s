@@ -1,0 +1,11 @@
+{
+     "type" : "array",
+     "items" : {
+       "type" : "enum",
+       "name" : "CupcatAnnotatedEnum",
+       "namespace" : "com.sksamuel.avro4s.schema",
+       "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+       "default" : "CuppersAnnotatedEnum"
+     }
+   }
+}
