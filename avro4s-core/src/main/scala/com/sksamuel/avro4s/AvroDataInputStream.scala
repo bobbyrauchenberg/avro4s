@@ -2,6 +2,8 @@ package com.sksamuel.avro4s
 
 import java.io.InputStream
 
+import cats.syntax.either._
+import com.sksamuel.avro4s.DecoderHelper.SafeDecode
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileStream
 import org.apache.avro.generic.{GenericData, GenericRecord}
@@ -25,9 +27,9 @@ class AvroDataInputStream[T](in: InputStream,
 
   private val dataFileReader = new DataFileStream[GenericRecord](in, datumReader.asInstanceOf[DatumReader[GenericRecord]])
 
-  override def iterator: Iterator[T] = new Iterator[T] {
+  override def iterator: Iterator[SafeDecode[T]] = new Iterator[SafeDecode[T]] {
     override def hasNext: Boolean = dataFileReader.hasNext
-    override def next(): T = {
+    override def next(): SafeDecode[T] = {
       val record = dataFileReader.next
       decoder.decode(record, readerSchema.getOrElse(record.getSchema), fieldMapper)
     }
@@ -35,10 +37,11 @@ class AvroDataInputStream[T](in: InputStream,
 
   override def tryIterator: Iterator[Try[T]] = new Iterator[Try[T]] {
     override def hasNext: Boolean = dataFileReader.hasNext
-    override def next(): Try[T] = Try {
+    override def next(): Try[T] = {
       val record = dataFileReader.next
-      decoder.decode(record, readerSchema.getOrElse(record.getSchema), fieldMapper)
+      decoder.decode(record, readerSchema.getOrElse(record.getSchema), fieldMapper).leftMap(e => new RuntimeException(e.message)).toTry
     }
+
   }
 
   override def close(): Unit = in.close()

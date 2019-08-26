@@ -4,6 +4,7 @@ import java.io.{ByteArrayInputStream, File, InputStream}
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
+import com.sksamuel.avro4s.DecoderHelper.SafeDecode
 import org.apache.avro.Schema
 
 import scala.util.Try
@@ -18,7 +19,7 @@ trait AvroInputStream[T] extends AutoCloseable {
   /**
     * Returns an iterator for the values of T in the stream.
     */
-  def iterator: Iterator[T]
+  def iterator: Iterator[SafeDecode[T]]
 
   /**
     * Returns an iterator for values of Try[T], so that any

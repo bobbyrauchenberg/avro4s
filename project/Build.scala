@@ -1,6 +1,6 @@
 import com.typesafe.sbt.SbtPgp
 import sbt.Keys._
-import sbt._
+import sbt.{addCompilerPlugin, _}
 
 /** Adds common settings automatically to all subprojects */
 object Build extends AutoPlugin {
@@ -44,12 +44,14 @@ object Build extends AutoPlugin {
     libraryDependencies ++= Seq(
       "org.scala-lang"    % "scala-reflect"     % scalaVersion.value,
       "org.scala-lang"    % "scala-compiler"    % scalaVersion.value,
+      "org.typelevel"     %% "cats-core"        % CatsVersion, 
       "org.apache.avro"   % "avro"              % AvroVersion,
       "org.slf4j"         % "slf4j-api"         % Slf4jVersion          % "test",
       "log4j"             % "log4j"             % Log4jVersion          % "test",
       "org.slf4j"         % "log4j-over-slf4j"  % Slf4jVersion          % "test",
       "org.scalatest"     %% "scalatest"        % ScalatestVersion      % "test"
-    )
+    ),
+      addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10")
   )
 
   val publishingSettings = Seq(

@@ -4,6 +4,7 @@ import com.sksamuel.avro4s.{AvroName, AvroSchema, Decoder, DefaultFieldMapper}
 import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 import org.scalatest.{FunSuite, Matchers}
+import cats.syntax.either._
 
 class AvroNameDecoderTest extends FunSuite with Matchers {
 
@@ -13,6 +14,6 @@ class AvroNameDecoderTest extends FunSuite with Matchers {
     val schema = AvroSchema[AvroNameDecoderTest]
     val record = new GenericData.Record(schema)
     record.put("bar", new Utf8("hello"))
-    Decoder[AvroNameDecoderTest].decode(record, schema, DefaultFieldMapper) shouldBe AvroNameDecoderTest("hello")
+    Decoder[AvroNameDecoderTest].decode(record, schema, DefaultFieldMapper) shouldBe AvroNameDecoderTest("hello").asRight
   }
 }

@@ -2,6 +2,8 @@ package com.sksamuel.avro4s
 
 import java.io.InputStream
 
+import cats.syntax.either._
+import com.sksamuel.avro4s.DecoderHelper.SafeDecode
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DecoderFactory
@@ -21,7 +23,7 @@ final case class AvroJsonInputStream[T](in: InputStream,
     datumReader.read(null, jsonDecoder)
   }
 
-  def iterator: Iterator[T] = Iterator.continually(next)
+  def iterator: Iterator[SafeDecode[T]] = Iterator.continually(next)
     .takeWhile(_.isSuccess)
     .map(_.get)
     .map(decoder.decode(_, readerSchema, fieldMapper))
@@ -29,9 +31,9 @@ final case class AvroJsonInputStream[T](in: InputStream,
   def tryIterator: Iterator[Try[T]] = Iterator.continually(next)
     .takeWhile(_.isSuccess)
     .map(_.get)
-    .map(record => Try(decoder.decode(record, readerSchema, fieldMapper)))
+    .map(record => decoder.decode(record, readerSchema, fieldMapper).leftMap(e => new RuntimeException(e.message)).toTry)
 
-  def singleEntity: Try[T] = next.map(decoder.decode(_, readerSchema, fieldMapper))
+  def singleEntity: Try[T] = next.flatMap(decoder.decode(_, readerSchema, fieldMapper).leftMap(e => new RuntimeException(e.message)).toTry)
 
   override def close(): Unit = in.close()
 }

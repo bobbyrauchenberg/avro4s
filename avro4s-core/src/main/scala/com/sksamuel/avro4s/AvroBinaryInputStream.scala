@@ -2,6 +2,8 @@ package com.sksamuel.avro4s
 
 import java.io.InputStream
 
+import cats.syntax.either._
+import com.sksamuel.avro4s.DecoderHelper.SafeDecode
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericData, GenericDatumReader, GenericRecord}
 import org.apache.avro.io.DecoderFactory
@@ -33,9 +35,9 @@ class AvroBinaryInputStream[T](in: InputStream,
   /**
     * Returns an iterator for the values of T in the stream.
     */
-  override def iterator: Iterator[T] = new Iterator[T] {
+  override def iterator: Iterator[SafeDecode[T]] = new Iterator[SafeDecode[T]] {
     override def hasNext: Boolean = _iter.hasNext
-    override def next(): T = decoder.decode(_iter.next, readerSchema, fieldMapper)
+    override def next(): SafeDecode[T] = decoder.decode(_iter.next, readerSchema, fieldMapper)
   }
 
   /**
@@ -44,7 +46,7 @@ class AvroBinaryInputStream[T](in: InputStream,
     */
   override def tryIterator: Iterator[Try[T]] = new Iterator[Try[T]] {
     override def hasNext: Boolean = _iter.hasNext
-    override def next(): Try[T] = Try(decoder.decode(_iter.next, readerSchema, fieldMapper))
+    override def next(): Try[T] = decoder.decode(_iter.next, readerSchema, fieldMapper).leftMap(e => new RuntimeException(e.message)).toTry
   }
 
   override def close(): Unit = in.close()

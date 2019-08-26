@@ -7,6 +7,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 import org.scalatest.{Matchers, WordSpec}
+import cats.syntax.either._
 
 class UUIDDecoderTest extends WordSpec with Matchers {
 
@@ -18,14 +19,14 @@ class UUIDDecoderTest extends WordSpec with Matchers {
       val schema = AvroSchema[UUIDTest]
       val record = new GenericData.Record(schema)
       record.put("uuid", uuid.toString)
-      Decoder[UUIDTest].decode(record, schema, DefaultFieldMapper) shouldBe UUIDTest(uuid)
+      Decoder[UUIDTest].decode(record, schema, DefaultFieldMapper) shouldBe UUIDTest(uuid).asRight
     }
     "decode UUIDSs encoded as Utf8" in {
       val uuid = UUID.randomUUID()
       val schema = AvroSchema[UUIDTest]
       val record = new GenericData.Record(schema)
       record.put("uuid", new Utf8(uuid.toString))
-      Decoder[UUIDTest].decode(record, schema, DefaultFieldMapper) shouldBe UUIDTest(uuid)
+      Decoder[UUIDTest].decode(record, schema, DefaultFieldMapper) shouldBe UUIDTest(uuid).asRight
     }
     "decode seq of uuids" in {
       val schema = AvroSchema[UUIDSeq]
@@ -36,7 +37,7 @@ class UUIDDecoderTest extends WordSpec with Matchers {
       val record = new GenericData.Record(schema)
       record.put("uuids", List(uuid1.toString, uuid2.toString).asJava)
 
-      Decoder[UUIDSeq].decode(record, schema, DefaultFieldMapper) shouldBe UUIDSeq(List(uuid1, uuid2))
+      Decoder[UUIDSeq].decode(record, schema, DefaultFieldMapper) shouldBe UUIDSeq(List(uuid1, uuid2)).asRight
     }
     "decode Option[UUID]" in {
       val schema = AvroSchema[UUIDOption]
@@ -45,12 +46,12 @@ class UUIDDecoderTest extends WordSpec with Matchers {
       val record1 = new GenericData.Record(schema)
       record1.put("uuid", uuid.toString)
 
-      Decoder[UUIDOption].decode(record1, schema, DefaultFieldMapper) shouldBe UUIDOption(Some(uuid))
+      Decoder[UUIDOption].decode(record1, schema, DefaultFieldMapper) shouldBe UUIDOption(Some(uuid)).asRight
 
       val record2 = new GenericData.Record(schema)
       record2.put("uuid", null)
 
-      Decoder[UUIDOption].decode(record2, schema, DefaultFieldMapper) shouldBe UUIDOption(None)
+      Decoder[UUIDOption].decode(record2, schema, DefaultFieldMapper) shouldBe UUIDOption(None).asRight
     }
   }
 }

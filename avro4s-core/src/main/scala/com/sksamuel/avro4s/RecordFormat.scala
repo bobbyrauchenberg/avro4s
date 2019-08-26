@@ -1,5 +1,6 @@
 package com.sksamuel.avro4s
 
+import com.sksamuel.avro4s.DecoderHelper.SafeDecode
 import org.apache.avro.Schema
 import org.apache.avro.generic.IndexedRecord
 
@@ -19,7 +20,7 @@ object RecordFormat {
   def apply[T: Encoder : Decoder](schema: Schema)(implicit fieldMapper: FieldMapper = DefaultFieldMapper): RecordFormat[T] = new RecordFormat[T] {
     private val fromRecord = FromRecord[T](schema)
     private val toRecord = ToRecord[T](schema)
-    override def from(record: IndexedRecord): T = fromRecord.from(record)
+    override def from(record: IndexedRecord): SafeDecode[T] = fromRecord.from(record)
     override def to(t: T): Record = toRecord.to(t)
   }
 }

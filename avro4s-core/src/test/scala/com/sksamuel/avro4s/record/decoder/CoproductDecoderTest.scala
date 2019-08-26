@@ -5,6 +5,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 import org.scalatest.{FunSuite, Matchers}
 import shapeless.{:+:, CNil, Coproduct}
+import cats.syntax.either._
 
 class CoproductDecoderTest extends FunSuite with Matchers {
 
@@ -12,7 +13,7 @@ class CoproductDecoderTest extends FunSuite with Matchers {
     val schema = AvroSchema[CPWrapper]
     val record = new GenericData.Record(schema)
     record.put("u", new Utf8("wibble"))
-    Decoder[CPWrapper].decode(record, schema, DefaultFieldMapper) shouldBe CPWrapper(Coproduct[CPWrapper.ISBG]("wibble"))
+    Decoder[CPWrapper].decode(record, schema, DefaultFieldMapper) shouldBe CPWrapper(Coproduct[CPWrapper.ISBG]("wibble")).asRight
   }
 
   test("coproducts with case classes") {
@@ -21,7 +22,7 @@ class CoproductDecoderTest extends FunSuite with Matchers {
     gimble.put("x", new Utf8("foo"))
     val record = new GenericData.Record(schema)
     record.put("u", gimble)
-    Decoder[CPWrapper].decode(record, schema, DefaultFieldMapper) shouldBe CPWrapper(Coproduct[CPWrapper.ISBG](Gimble("foo")))
+    Decoder[CPWrapper].decode(record, schema, DefaultFieldMapper) shouldBe CPWrapper(Coproduct[CPWrapper.ISBG](Gimble("foo"))).asRight
   }
 
   test("coproducts with options") {
@@ -30,7 +31,7 @@ class CoproductDecoderTest extends FunSuite with Matchers {
     gimble.put("x", new Utf8("foo"))
     val record = new GenericData.Record(schema)
     record.put("u", gimble)
-    Decoder[CPWithOption].decode(record, schema, DefaultFieldMapper) shouldBe CPWithOption(Some(Coproduct[CPWrapper.ISBG](Gimble("foo"))))
+    Decoder[CPWithOption].decode(record, schema, DefaultFieldMapper) shouldBe CPWithOption(Some(Coproduct[CPWrapper.ISBG](Gimble("foo")))).asRight
   }
 }
 

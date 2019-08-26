@@ -4,6 +4,7 @@ import com.sksamuel.avro4s.{AvroSchema, Decoder, DefaultFieldMapper}
 import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 import org.scalatest.{FunSuite, Matchers}
+import cats.syntax.either._
 
 class ValueTypeDecoderTest extends FunSuite with Matchers {
 
@@ -12,7 +13,7 @@ class ValueTypeDecoderTest extends FunSuite with Matchers {
 
   test("top level value types") {
     val actual = Decoder[FooValueType].decode("hello", AvroSchema[FooValueType], DefaultFieldMapper)
-    actual shouldBe FooValueType("hello")
+    actual shouldBe FooValueType("hello").asRight
   }
 
   test("support fields that are value types") {
@@ -21,7 +22,7 @@ class ValueTypeDecoderTest extends FunSuite with Matchers {
     val record1 = new GenericData.Record(schema)
     record1.put("foo", new Utf8("hello"))
 
-    Decoder[Test].decode(record1, schema, DefaultFieldMapper) shouldBe Test(FooValueType("hello"))
+    Decoder[Test].decode(record1, schema, DefaultFieldMapper) shouldBe Test(FooValueType("hello")).asRight
   }
 
   test("support value types inside Options") {
@@ -30,7 +31,7 @@ class ValueTypeDecoderTest extends FunSuite with Matchers {
     val record1 = new GenericData.Record(schema)
     record1.put("foo", new Utf8("hello"))
 
-    Decoder[OptionTest].decode(record1, schema, DefaultFieldMapper) shouldBe OptionTest(Some(FooValueType("hello")))
+    Decoder[OptionTest].decode(record1, schema, DefaultFieldMapper) shouldBe OptionTest(Some(FooValueType("hello"))).asRight
   }
 }
 

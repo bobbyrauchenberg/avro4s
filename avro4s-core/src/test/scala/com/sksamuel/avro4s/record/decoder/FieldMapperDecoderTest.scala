@@ -4,6 +4,7 @@ import com.sksamuel.avro4s.record.encoder.NamingTest
 import com.sksamuel.avro4s.{Decoder, SchemaFor, SnakeCase}
 import org.apache.avro.generic.GenericData
 import org.scalatest.{FunSuite, Matchers}
+import cats.syntax.either._
 
 class FieldMapperDecoderTest extends FunSuite with Matchers {
 
@@ -13,6 +14,6 @@ class FieldMapperDecoderTest extends FunSuite with Matchers {
     val record = new GenericData.Record(schema)
     record.put("camel_case", "foo")
     val result = decoder.decode(record, schema, SnakeCase)
-    result shouldBe NamingTest("foo")
+    result shouldBe NamingTest("foo").asRight
   }
 }

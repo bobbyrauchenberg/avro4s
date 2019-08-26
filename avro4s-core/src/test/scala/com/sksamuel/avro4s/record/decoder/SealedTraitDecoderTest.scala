@@ -5,6 +5,7 @@ import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.util.Utf8
 import org.scalatest.{FunSuite, Matchers}
+import cats.syntax.either._
 
 class SealedTraitDecoderTest extends FunSuite with Matchers {
 
@@ -16,7 +17,7 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     record.put("wibble", wobble)
 
     val wrapper = Decoder[Wrapper].decode(record, record.getSchema, DefaultFieldMapper)
-    wrapper shouldBe Wrapper(Wobble("foo"))
+    wrapper shouldBe Wrapper(Wobble("foo")).asRight
   }
 
   test("support trait subtypes fields with same name") {
@@ -28,7 +29,7 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     record.put("tibble", tobble)
 
     val trapper = Decoder[Trapper].decode(record, record.getSchema, DefaultFieldMapper)
-    trapper shouldBe Trapper(Tobble("foo", "bar"))
+    trapper shouldBe Trapper(Tobble("foo", "bar")).asRight
   }
 
   test("support trait subtypes fields with same name and same type") {
@@ -40,7 +41,7 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     record.put("nibble", nabble)
 
     val napper = Decoder[Napper].decode(record, record.getSchema, DefaultFieldMapper)
-    napper shouldBe Napper(Nabble("foo", 44))
+    napper shouldBe Napper(Nabble("foo", 44)).asRight
   }
 
   test("support top level ADTs") {
@@ -49,7 +50,7 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     nabble.put("str", new Utf8("foo"))
     nabble.put("age", java.lang.Integer.valueOf(44))
 
-    Decoder[Nibble].decode(nabble, nabble.getSchema, DefaultFieldMapper) shouldBe Nabble("foo", 44)
+    Decoder[Nibble].decode(nabble, nabble.getSchema, DefaultFieldMapper) shouldBe Nabble("foo", 44).asRight
   }
 
   test("use @AvroNamespace when choosing which type to decode") {
@@ -59,8 +60,8 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     val union = SchemaBuilder.unionOf().`type`(appleschema).and().`type`(orangeschema).endUnion()
     val schema = SchemaBuilder.record("Buy").fields().name("fruit").`type`(union).noDefault().endRecord()
 
-    Decoder[Buy].decode(ImmutableRecord(schema, Vector(ImmutableRecord(appleschema, Vector(java.lang.Double.valueOf(0.3))))), schema, DefaultFieldMapper) shouldBe Buy(Apple(0.3))
-    Decoder[Buy].decode(ImmutableRecord(schema, Vector(ImmutableRecord(orangeschema, Vector(new Utf8("bright orange"))))), schema, DefaultFieldMapper) shouldBe Buy(Orange("bright orange"))
+    Decoder[Buy].decode(ImmutableRecord(schema, Vector(ImmutableRecord(appleschema, Vector(java.lang.Double.valueOf(0.3))))), schema, DefaultFieldMapper) shouldBe Buy(Apple(0.3)).asRight
+    Decoder[Buy].decode(ImmutableRecord(schema, Vector(ImmutableRecord(orangeschema, Vector(new Utf8("bright orange"))))), schema, DefaultFieldMapper) shouldBe Buy(Orange("bright orange")).asRight
   }
 
   test("use @AvroNamespace and @AvroName with sealed traits of case objects") {
@@ -72,8 +73,8 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     val record2 = new GenericData.Record(schema)
     record2.put("thing", "widget")
 
-    Decoder[ThingHolder].decode(record1, schema, DefaultFieldMapper) shouldBe ThingHolder(WhimWham)
-    Decoder[ThingHolder].decode(record2, schema, DefaultFieldMapper) shouldBe ThingHolder(Widget)
+    Decoder[ThingHolder].decode(record1, schema, DefaultFieldMapper) shouldBe ThingHolder(WhimWham).asRight
+    Decoder[ThingHolder].decode(record2, schema, DefaultFieldMapper) shouldBe ThingHolder(Widget).asRight
   }
 
   test("use @AvroNamespace and @AvroName with sealed traits of case objects in a round trip") {
@@ -83,7 +84,7 @@ class SealedTraitDecoderTest extends FunSuite with Matchers {
     val value = ThingHolder(WhimWham)
     val encodedRecord: GenericRecord = Encoder[ThingHolder].encode(value, schema, DefaultFieldMapper).asInstanceOf[GenericRecord]
     val decoded = Decoder[ThingHolder].decode(encodedRecord, schema, DefaultFieldMapper)
-    decoded shouldBe value
+    decoded shouldBe value.asRight
   }
 
 }
