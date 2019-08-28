@@ -18,7 +18,7 @@ object DecoderHelper {
     }.toEither.leftMap(e => DecodingFailure(e.getMessage)).flatMap(identity)
     (decodeResult, param.default) match {
       case (Right(v), _) => v.asRight
-      case (Left(DecodingFailure(msg)), Some(default)) => default.asRight
+      case (Left(DecodingFailure(_)), Some(default)) => default.asRight
       case (Left(DecodingFailure(msg)), _) => DecodingFailure(msg).asLeft
     }
   }
